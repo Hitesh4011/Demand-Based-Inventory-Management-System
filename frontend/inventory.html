@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900">
+  <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,">
+  <style>
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f0f2f5;
+      --text-primary: #111418;
+      --text-secondary: #60758a;
+      --border-color: #dbe0e6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .app-container {
+      position: relative;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+      background-color: var(--bg-primary);
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    .layout-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      flex-grow: 1;
+    }
+
+    /* Main layout */
+    .content-layout {
+      display: flex;
+      gap: 4px;
+      padding: 20px 24px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .brand-logo {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Sidebar styles */
+    .sidebar {
+      width: 320px;
+      min-height: 700px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-color: white;
+      padding: 16px;
+    }
+
+    .user-info {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .user-avatar {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      aspect-ratio: 1/1;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+    }
+
+    .user-name {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background-color: var(--bg-secondary);
+    }
+
+    .nav-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .nav-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      margin-right: 8px;
+      z-index: 1100;
+    }
+
+    .menu-toggle .bar {
+      width: 24px;
+      height: 3px;
+      background-color: var(--text-primary);
+      border-radius: 2px;
+    }
+
+    /* Main content styles */
+    .main-content {
+      flex-grow: 1;
+      max-width: 960px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      min-width: 288px;
+    }
+
+    .update-button {
+      display: flex;
+      min-width: 84px;
+      max-width: 480px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 8px;
+      height: 32px;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 0 16px;
+      border: none;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      padding: 0 16px 12px;
+      padding-top: 20px;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .product-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      background-color: var(--bg-primary);
+    }
+
+    .product-icon {
+      width: 24px;
+      height: 24px;
+      color: var(--text-primary);
+    }
+
+    .product-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .product-quantity {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+
+    .table-container {
+      padding: 12px 16px;
+      container-type: inline-size;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: var(--bg-primary);
+    }
+
+    .data-table thead tr {
+      background-color: var(--bg-primary);
+    }
+
+    .data-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .data-table td {
+      padding: 8px 16px;
+      height: 72px;
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    .table-product {
+      color: var(--text-primary);
+    }
+
+    .table-data {
+      color: var(--text-secondary);
+    }
+
+    .status-btn {
+      display: flex;
+      min-width: 84px;
+      max-width: 480px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 8px;
+      height: 32px;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+      padding: 0 16px;
+      border: none;
+    }
+
+    .data-table tbody tr {
+      border-top: 1px solid var(--border-color);
+    }
+
+    .filters-section {
+      padding: 12px 16px;
+    }
+
+    .filter-row {
+      display: flex;
+      max-width: 480px;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .filter-input, .filter-select {
+      width: 100%;
+      min-height: 56px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: var(--bg-primary);
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .filter-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .filter-select {
+      appearance: none;
+      background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(69,116,161)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e');
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+    }
+
+    /* Modal base */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .submit-btn, .open-btn {
+      margin-top: 15px;
+      padding: 10px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .submit-btn:hover, .open-btn:hover {
+      background-color: #3e8e41;
+    }
+
+    @media screen and (max-width: 480px) {
+      .modal-content {
+        width: 95%;
+        padding: 15px;
+      }
+
+      .close {
+        top: 5px;
+        right: 10px;
+      }
+    }
+
+    /* Container queries for table responsiveness */
+    @container (max-width: 120px) {
+      .column-product {
+        display: none;
+      }
+    }
+    
+    @container (max-width: 240px) {
+      .column-batch {
+        display: none;
+      }
+    }
+    
+    @container (max-width: 360px) {
+      .column-quantity {
+        display: none;
+      }
+    }
+    
+    @container (max-width: 480px) {
+      .column-production {
+        display: none;
+      }
+    }
+
+    @container (max-width: 600px) {
+      .column-expiration {
+        display: none;
+      }
+    }
+
+    @container (max-width: 720px) {
+      .column-days {
+        display: none;
+      }
+    }
+
+    @container (max-width: 840px) {
+      .column-status {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .filter-row {
+        flex-direction: column;
+      }
+      
+      .filter-group {
+        width: 100%;
+      }
+    }
+
+    /* Responsive styles */
+    @media (max-width: 1200px) {
+      .user-info {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        padding: 0 16px;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+
+      .menu-toggle {
+        display: flex;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 56px;
+        left: -320px;
+        width: 280px;
+        height: 100%;
+        background-color: white;
+        transition: left 0.3s ease;
+        z-index: 1000;
+        box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .content-layout {
+        padding-top: 56px; /* push content below fixed top bar */
+        flex-direction: column;
+        margin: auto;
+      }
+    }
+    
+    @media (min-width: 1201px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+        margin-left: 30px;
+        margin-top: 20px;
+      }
+
+      .content-layout {
+        margin-left: 320px;
+      }
+
+      .main-content {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="layout-container">
+      <div class="content-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="sidebar-content">
+            <div class="user-info">
+              <button class="menu-toggle" onclick="toggleMenu()" aria-label="Toggle Menu">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+              </button>
+              <svg class="brand-logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M13.8261 30.5736C16.7203 29.8826 20.2244 29.4783 24 29.4783C27.7756 29.4783 31.2797 29.8826 34.1739 30.5736C36.9144 31.2278 39.9967 32.7669 41.3563 33.8352L24.8486 7.36089C24.4571 6.73303 23.5429 6.73303 23.1514 7.36089L6.64374 33.8352C8.00331 32.7669 11.0856 31.2278 13.8261 30.5736Z"
+                  fill="currentColor"
+                ></path>
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M39.998 35.764C39.9944 35.7463 39.9875 35.7155 39.9748 35.6706C39.9436 35.5601 39.8949 35.4259 39.8346 35.2825C39.8168 35.2403 39.7989 35.1993 39.7813 35.1602C38.5103 34.2887 35.9788 33.0607 33.7095 32.5189C30.9875 31.8691 27.6413 31.4783 24 31.4783C20.3587 31.4783 17.0125 31.8691 14.2905 32.5189C12.0012 33.0654 9.44505 34.3104 8.18538 35.1832C8.17384 35.2075 8.16216 35.233 8.15052 35.2592C8.09919 35.3751 8.05721 35.4886 8.02977 35.589C8.00356 35.6848 8.00039 35.7333 8.00004 35.7388C8.00004 35.739 8 35.7393 8.00004 35.7388C8.00004 35.7641 8.0104 36.0767 8.68485 36.6314C9.34546 37.1746 10.4222 37.7531 11.9291 38.2772C14.9242 39.319 19.1919 40 24 40C28.8081 40 33.0758 39.319 36.0709 38.2772C37.5778 37.7531 38.6545 37.1746 39.3151 36.6314C39.9006 36.1499 39.9857 35.8511 39.998 35.764ZM4.95178 32.7688L21.4543 6.30267C22.6288 4.4191 25.3712 4.41909 26.5457 6.30267L43.0534 32.777C43.0709 32.8052 43.0878 32.8338 43.104 32.8629L41.3563 33.8352C43.104 32.8629 43.1038 32.8626 43.104 32.8629L43.1051 32.865L43.1065 32.8675L43.1101 32.8739L43.1199 32.8918C43.1276 32.906 43.1377 32.9246 43.1497 32.9473C43.1738 32.9925 43.2062 33.0545 43.244 33.1299C43.319 33.2792 43.4196 33.489 43.5217 33.7317C43.6901 34.1321 44 34.9311 44 35.7391C44 37.4427 43.003 38.7775 41.8558 39.7209C40.6947 40.6757 39.1354 41.4464 37.385 42.0552C33.8654 43.2794 29.133 44 24 44C18.867 44 14.1346 43.2794 10.615 42.0552C8.86463 41.4464 7.30529 40.6757 6.14419 39.7209C4.99695 38.7775 3.99999 37.4427 3.99999 35.7391C3.99999 34.8725 4.29264 34.0922 4.49321 33.6393C4.60375 33.3898 4.71348 33.1804 4.79687 33.0311C4.83898 32.9556 4.87547 32.8935 4.9035 32.8471C4.91754 32.8238 4.92954 32.8043 4.93916 32.7889L4.94662 32.777L4.95178 32.7688ZM35.9868 29.004L24 9.77997L12.0131 29.004C12.4661 28.8609 12.9179 28.7342 13.3617 28.6282C16.4281 27.8961 20.0901 27.4783 24 27.4783C27.9099 27.4783 31.5719 27.8961 34.6383 28.6282C35.082 28.7342 35.5339 28.8609 35.9868 29.004Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+              <h2 class="user-name">Flavi Dairy Solutions</h2>
+            </div>
+            
+            <div class="nav-menu">
+              <a href="index.html" class="nav-item">
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M218.83,103.77l-80-75.48a1.14,1.14,0,0,1-.11-.11,16,16,0,0,0-21.53,0l-.11.11L37.17,103.77A16,16,0,0,0,32,115.55V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V160h32v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V115.55A16,16,0,0,0,218.83,103.77ZM208,208H160V160a16,16,0,0,0-16-16H112a16,16,0,0,0-16,16v48H48V115.55l.11-.1L128,40l79.9,75.43.11.1Z"></path>
+                    </svg>
+                </div>
+                <p class="nav-label">Dashboard</p>
+              </a>
+              
+              <a href="#" class="nav-item active">
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.35,44L178.57,92.29l-80.35-44Zm0,88L47.65,76,81.56,57.43l80.35,44Zm88,55.85h0l-80,43.79V133.83l32-17.51V152a8,8,0,0,0,16,0V107.56l32-17.51v85.76Z"></path>
+                    </svg>
+                </div>
+                <p class="nav-label">Inventory</p>
+              </a>
+              
+              <a href="forecast.html" class="nav-item">
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M216,40H136V24a8,8,0,0,0-16,0V40H40A16,16,0,0,0,24,56V176a16,16,0,0,0,16,16H79.36L57.75,219a8,8,0,0,0,12.5,10l29.59-37h56.32l29.59,37a8,8,0,1,0,12.5-10l-21.61-27H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,136H40V56H216V176ZM104,120v24a8,8,0,0,1-16,0V120a8,8,0,0,1,16,0Zm32-16v40a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm32-16v56a8,8,0,0,1-16,0V88a8,8,0,0,1,16,0Z"></path>
+                    </svg>
+                </div>
+                <p class="nav-label">Forecasting</p>
+              </a>
+              
+              <a href="about.html" class="nav-item">
+                <div class="nav-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                    <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path>
+                  </svg>
+                </div>
+                <p class="nav-label">About</p>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+          <div class="page-header">
+            <h1 class="page-title">Inventory Overview</h1>
+            <button onclick="openModal()" class="update-button">Update Inventory</button>
+          </div>
+          
+          <h2 class="section-title">Product Stock Summary</h2>
+          <div class="product-grid">
+            <div class="product-card">
+              <div class="product-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                  <path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.35,44-29.77,16.3-80.35-44ZM128,120,47.65,76l33.9-18.56,80.34,44ZM40,90l80,43.78v85.79L40,175.82Zm176,85.78h0l-80,43.79V133.82l32-17.51V152a8,8,0,0,0,16,0V107.55L216,90v85.77Z"></path>
+                </svg>
+              </div>
+              <h3 class="product-name">Milk</h3>
+              <p class="product-quantity">1000 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Butter</h3>
+              <p class="product-quantity">500 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Cheese</h3>
+              <p class="product-quantity">750 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Yogurt</h3>
+              <p class="product-quantity">600 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Ice Cream</h3>
+              <p class="product-quantity">400 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Curd</h3>
+              <p class="product-quantity">800 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Lassi</h3>
+              <p class="product-quantity">300 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Buttermilk</h3>
+              <p class="product-quantity">250 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Paneer</h3>
+              <p class="product-quantity">450 units</p>
+            </div>
+            
+            <div class="product-card">
+              <h3 class="product-name">Ghee</h3>
+              <p class="product-quantity">200 units</p>
+            </div>
+          </div>
+          
+          <h2 class="section-title">Batch-wise Inventory</h2>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="column-product">Product Name</th>
+                  <th class="column-batch">Batch ID</th>
+                  <th class="column-quantity">Quantity in Batch</th>
+                  <th class="column-production">Production Date</th>
+                  <th class="column-expiration">Expiration Date</th>
+                  <th class="column-days">Days to Expire</th>
+                  <th class="column-status">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="table-product">Milk</td>
+                  <td class="table-data">B123</td>
+                  <td class="table-data">200</td>
+                  <td class="table-data">2023-01-15</td>
+                  <td class="table-data">2023-01-22</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Butter</td>
+                  <td class="table-data">B456</td>
+                  <td class="table-data">100</td>
+                  <td class="table-data">2023-01-10</td>
+                  <td class="table-data">2023-01-17</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Cheese</td>
+                  <td class="table-data">B789</td>
+                  <td class="table-data">150</td>
+                  <td class="table-data">2023-01-05</td>
+                  <td class="table-data">2023-01-12</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Yogurt</td>
+                  <td class="table-data">B101</td>
+                  <td class="table-data">120</td>
+                  <td class="table-data">2023-01-01</td>
+                  <td class="table-data">2023-01-08</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Ice Cream</td>
+                  <td class="table-data">B112</td>
+                  <td class="table-data">80</td>
+                  <td class="table-data">2022-12-27</td>
+                  <td class="table-data">2023-01-03</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Curd</td>
+                  <td class="table-data">B131</td>
+                  <td class="table-data">160</td>
+                  <td class="table-data">2022-12-22</td>
+                  <td class="table-data">2022-12-29</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Lassi</td>
+                  <td class="table-data">B141</td>
+                  <td class="table-data">60</td>
+                  <td class="table-data">2022-12-17</td>
+                  <td class="table-data">2022-12-24</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Buttermilk</td>
+                  <td class="table-data">B151</td>
+                  <td class="table-data">50</td>
+                  <td class="table-data">2022-12-12</td>
+                  <td class="table-data">2022-12-19</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Paneer</td>
+                  <td class="table-data">B161</td>
+                  <td class="table-data">90</td>
+                  <td class="table-data">2022-12-07</td>
+                  <td class="table-data">2022-12-14</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+                <tr>
+                  <td class="table-product">Ghee</td>
+                  <td class="table-data">B171</td>
+                  <td class="table-data">40</td>
+                  <td class="table-data">2022-12-02</td>
+                  <td class="table-data">2022-12-09</td>
+                  <td class="table-data">7</td>
+                  <td><button class="status-btn">Active</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <h2 class="section-title">Filters</h2>
+          <div class="filters-section">
+            <div class="filter-row">
+              <div class="filter-group">
+                <input type="text" placeholder="Product Name" class="filter-input">
+              </div>
+              <div class="filter-group">
+                <input type="text" placeholder="Batch ID" class="filter-input">
+              </div>
+            </div>
+            
+            <div class="filter-row">
+              <div class="filter-group">
+                <input type="text" placeholder="Production Date" class="filter-input">
+              </div>
+              <div class="filter-group">
+                <input type="text" placeholder="Expiration Date" class="filter-input">
+              </div>
+            </div>
+            
+            <div class="filter-row">
+              <div class="filter-group">
+                <select class="filter-select">
+                  <option value="one">Expiry Status</option>
+                  <option value="two">Active</option>
+                  <option value="three">Expired</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inventory Modal -->
+  <div id="inventoryModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2>Inventory Management</h2>
+
+    <!-- Mode Toggle -->
+    <div style="margin-bottom: 15px;">
+      <label>
+        <input type="radio" name="mode" value="add" checked onchange="toggleMode('add')"> Add Stock
+      </label>
+      <label style="margin-left: 20px;">
+        <input type="radio" name="mode" value="update" onchange="toggleMode('update')"> Update Stock
+      </label>
+    </div>
+
+    <!-- Add Stock Section -->
+    <div id="add-stock-section">
+      <label for="add-product">Product Name:</label>
+      <select id="add-product">
+        <option>Milk</option>
+        <option>Butter</option>
+        <option>Cheese</option>
+        <option>Yogurt</option>
+        <option>Ice Cream</option>
+        <option>Curd</option>
+        <option>Lassi</option>
+        <option>Buttermilk</option>
+        <option>Paneer</option>
+        <option>Ghee</option>
+      </select>
+
+      <label for="add-quantity">Batch Quantity:</label>
+      <input type="number" id="add-quantity" placeholder="e.g., 300">
+
+      <label for="add-production">Production Date:</label>
+      <input type="date" id="add-production">
+
+      <label for="add-expiry">Expiration Date:</label>
+      <input type="date" id="add-expiry">
+
+      <button class="submit-btn">✅ Add to Inventory</button>
+    </div>
+
+    <!-- Update Stock Section -->
+    <div id="update-stock-section" style="display: none;">
+      <label for="update-product">Product Name:</label>
+      <select id="update-product">
+        <option>Milk</option>
+        <option>Butter</option>
+        <option>Cheese</option>
+        <option>Yogurt</option>
+        <option>Ice Cream</option>
+        <option>Curd</option>
+        <option>Lassi</option>
+        <option>Buttermilk</option>
+        <option>Paneer</option>
+        <option>Ghee</option>
+      </select>
+
+      <label for="update-batch">Select Batch:</label>
+      <select id="update-batch">
+        <option>Batch A (60L - Expires: 2025-07-10)</option>
+        <option>Batch B (30L - Expires: 2025-07-15)</option>
+      </select>
+
+      <label for="update-quantity">Quantity to Remove:</label>
+      <input type="number" id="update-quantity" placeholder="e.g., 30">
+
+      <label for="update-date">Delivered On:</label>
+      <input type="date" id="update-date">
+
+      <button class="submit-btn">✅ Update Stock</button>
+    </div>
+
+  </div>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('open');
+    }
+
+    function openModal() {
+      document.getElementById('inventoryModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('inventoryModal').style.display = 'none';
+    }
+
+    function toggleMode(mode) {
+      const addSection = document.getElementById('add-stock-section');
+      const updateSection = document.getElementById('update-stock-section');
+      if (mode === 'add') {
+        addSection.style.display = 'block';
+        updateSection.style.display = 'none';
+      } else {
+        addSection.style.display = 'none';
+        updateSection.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
