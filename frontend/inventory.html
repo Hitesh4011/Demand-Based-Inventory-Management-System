@@ -10,10 +10,10 @@
   <style>
     :root {
       --bg-primary: #ffffff;
-      --bg-secondary: #f0f2f5;
-      --text-primary: #111418;
-      --text-secondary: #60758a;
-      --border-color: #dbe0e6;
+      --bg-secondary: #e4e7ec;     
+      --text-primary: #1a1d21;     
+      --text-secondary: #5a6b7d;   
+      --border-color: #cdd3db;
     }
 
     * {
@@ -342,6 +342,26 @@
       background-color: rgba(0, 0, 0, 0.4);
       justify-content: center;
       align-items: center;
+    }
+
+    .mode-toggle {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      font-weight: bold;
+      margin: 0px 5px;
+    }
+    .tab.selected {
+      background-color: var(--bg-primary);
     }
 
     .modal-content {
@@ -806,80 +826,77 @@
 
   <!-- Inventory Modal -->
   <div id="inventoryModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <h2>Inventory Management</h2>
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Inventory Management</h2>
 
-    <!-- Mode Toggle -->
-    <div style="margin-bottom: 15px;">
-      <label>
-        <input type="radio" name="mode" value="add" checked onchange="toggleMode('add')"> Add Stock
-      </label>
-      <label style="margin-left: 20px;">
-        <input type="radio" name="mode" value="update" onchange="toggleMode('update')"> Update Stock
-      </label>
+      <!-- Mode Toggle as tab-style boxes -->
+      <div class="mode-toggle">
+        <div class="tab selected" id="tab-add" onclick="selectMode('add')">Add Stock</div>
+        <div class="tab" id="tab-update" onclick="selectMode('update')">Update Stock</div>
+      </div>
+
+      <!-- Add Stock Section -->
+      <div id="add-stock-section">
+        <label for="add-product">Product Name:</label>
+        <select id="add-product">
+          <option>Milk</option>
+          <option>Butter</option>
+          <option>Cheese</option>
+          <option>Yogurt</option>
+          <option>Ice Cream</option>
+          <option>Curd</option>
+          <option>Lassi</option>
+          <option>Buttermilk</option>
+          <option>Paneer</option>
+          <option>Ghee</option>
+        </select>
+
+        <label for="add-quantity">Batch Quantity:</label>
+        <input type="number" id="add-quantity" placeholder="e.g., 300">
+
+        <label for="add-production">Production Date:</label>
+        <input type="date" id="add-production">
+
+        <label for="add-expiry">Expiration Date:</label>
+        <input type="date" id="add-expiry">
+
+        <button class="submit-btn">✅ Add to Inventory</button>
+      </div>
+
+      <!-- Update Stock Section -->
+      <div id="update-stock-section" style="display: none;">
+        <label for="update-product">Product Name:</label>
+        <select id="update-product">
+          <option>Milk</option>
+          <option>Butter</option>
+          <option>Cheese</option>
+          <option>Yogurt</option>
+          <option>Ice Cream</option>
+          <option>Curd</option>
+          <option>Lassi</option>
+          <option>Buttermilk</option>
+          <option>Paneer</option>
+          <option>Ghee</option>
+        </select>
+
+        <label for="update-batch">Select Batch:</label>
+        <select id="update-batch">
+          <option>Batch A (60L - Expires: 2025-07-10)</option>
+          <option>Batch B (30L - Expires: 2025-07-15)</option>
+        </select>
+
+        <label for="update-quantity">Quantity to Remove:</label>
+        <input type="number" id="update-quantity" placeholder="e.g., 30">
+
+        <label for="update-date">Delivered On:</label>
+        <input type="date" id="update-date">
+
+        <button class="submit-btn">✅ Update Stock</button>
+      </div>
     </div>
-
-    <!-- Add Stock Section -->
-    <div id="add-stock-section">
-      <label for="add-product">Product Name:</label>
-      <select id="add-product">
-        <option>Milk</option>
-        <option>Butter</option>
-        <option>Cheese</option>
-        <option>Yogurt</option>
-        <option>Ice Cream</option>
-        <option>Curd</option>
-        <option>Lassi</option>
-        <option>Buttermilk</option>
-        <option>Paneer</option>
-        <option>Ghee</option>
-      </select>
-
-      <label for="add-quantity">Batch Quantity:</label>
-      <input type="number" id="add-quantity" placeholder="e.g., 300">
-
-      <label for="add-production">Production Date:</label>
-      <input type="date" id="add-production">
-
-      <label for="add-expiry">Expiration Date:</label>
-      <input type="date" id="add-expiry">
-
-      <button class="submit-btn">✅ Add to Inventory</button>
-    </div>
-
-    <!-- Update Stock Section -->
-    <div id="update-stock-section" style="display: none;">
-      <label for="update-product">Product Name:</label>
-      <select id="update-product">
-        <option>Milk</option>
-        <option>Butter</option>
-        <option>Cheese</option>
-        <option>Yogurt</option>
-        <option>Ice Cream</option>
-        <option>Curd</option>
-        <option>Lassi</option>
-        <option>Buttermilk</option>
-        <option>Paneer</option>
-        <option>Ghee</option>
-      </select>
-
-      <label for="update-batch">Select Batch:</label>
-      <select id="update-batch">
-        <option>Batch A (60L - Expires: 2025-07-10)</option>
-        <option>Batch B (30L - Expires: 2025-07-15)</option>
-      </select>
-
-      <label for="update-quantity">Quantity to Remove:</label>
-      <input type="number" id="update-quantity" placeholder="e.g., 30">
-
-      <label for="update-date">Delivered On:</label>
-      <input type="date" id="update-date">
-
-      <button class="submit-btn">✅ Update Stock</button>
-    </div>
-
   </div>
+
   </div>
 
   <script>
@@ -896,13 +913,20 @@
       document.getElementById('inventoryModal').style.display = 'none';
     }
 
-    function toggleMode(mode) {
+    function selectMode(mode) {
+      const addTab = document.getElementById('tab-add');
+      const updateTab = document.getElementById('tab-update');
       const addSection = document.getElementById('add-stock-section');
       const updateSection = document.getElementById('update-stock-section');
+
       if (mode === 'add') {
+        addTab.classList.add('selected');
+        updateTab.classList.remove('selected');
         addSection.style.display = 'block';
         updateSection.style.display = 'none';
       } else {
+        addTab.classList.remove('selected');
+        updateTab.classList.add('selected');
         addSection.style.display = 'none';
         updateSection.style.display = 'block';
       }
