@@ -10,7 +10,8 @@
   <style>
     :root {
       --bg-primary: #ffffff;
-      --bg-secondary: #e4e7ec;     
+      --bg-secondary: #e4e7ec;
+      --bg-hover: #d0d5dd;  
       --text-primary: #1a1d21;     
       --text-secondary: #5a6b7d;   
       --border-color: #cdd3db;
@@ -346,7 +347,6 @@
 
     .mode-toggle {
       display: flex;
-      margin-bottom: 20px;
     }
     .tab {
       flex: 1;
@@ -358,14 +358,14 @@
       border-bottom: none;
       border-radius: 6px 6px 0 0;
       font-weight: bold;
-      margin: 0px 5px;
+      transition: background-color 0.3s ease;
     }
     .tab.selected {
       background-color: var(--bg-primary);
     }
 
     .modal-content {
-      background-color: #fff;
+      background-color: var(--bg-primary);
       margin: auto;
       padding: 20px;
       border-radius: 10px;
@@ -375,6 +375,50 @@
       font-family: 'Segoe UI', sans-serif;
     }
 
+    .inventory-modal {
+      background: var(--bg-primary);
+      padding: 20px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .tabs {
+      display: flex;
+    }
+
+    .tab-button {
+      flex: 1;
+      background: var(--bg-secondary);
+      padding: 12px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      font-weight: 500;
+    }
+
+    .tab-button:not(:last-child) {
+      border-right: 1px solid var(--bg-primary);
+    }
+
+    .tab-button.active {
+      background: var(--bg-primary);
+      z-index: 1;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      margin-bottom: -1px;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-content {
+      border: 1px solid var(--border-color);
+      border-top: none;
+      padding: 15px;
+      border-radius: 0 0 10px 10px;
+      background: var(--bg-primary);
+    }
+
     .close {
       position: absolute;
       top: 10px;
@@ -382,7 +426,7 @@
       font-size: 24px;
       cursor: pointer;
     }
-
+    
     label {
       display: block;
       margin-top: 10px;
@@ -394,23 +438,25 @@
       padding: 8px;
       margin-top: 4px;
       border-radius: 5px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--border-color);
       font-size: 14px;
     }
 
     .submit-btn, .open-btn {
-      margin-top: 15px;
+      display: block;
+      margin: 20px auto 0px auto;
       padding: 10px 16px;
-      background-color: #4CAF50;
-      color: white;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-size: 15px;
+      border: 1px solid var(--border-color);
     }
 
     .submit-btn:hover, .open-btn:hover {
-      background-color: #3e8e41;
+      background-color: var(--bg-hover);
     }
 
     @media screen and (max-width: 480px) {
@@ -829,15 +875,15 @@
     <div class="modal-content">
       <span class="close" onclick="closeModal()">&times;</span>
       <h2>Inventory Management</h2>
-
+      <br>
       <!-- Mode Toggle as tab-style boxes -->
-      <div class="mode-toggle">
-        <div class="tab selected" id="tab-add" onclick="selectMode('add')">Add Stock</div>
-        <div class="tab" id="tab-update" onclick="selectMode('update')">Update Stock</div>
+      <div class="mode-toggle tabs">
+        <div class="tab selected" id="tab-add" onclick="selectMode('add'); showTab('add');">Add Stock</div>
+        <div class="tab" id="tab-update" onclick="selectMode('update'); showTab('update');">Update Stock</div>
       </div>
 
       <!-- Add Stock Section -->
-      <div id="add-stock-section">
+      <div id="add-stock-section" class="tab-content" style="display: block;">
         <label for="add-product">Product Name:</label>
         <select id="add-product">
           <option>Milk</option>
@@ -861,11 +907,11 @@
         <label for="add-expiry">Expiration Date:</label>
         <input type="date" id="add-expiry">
 
-        <button class="submit-btn">✅ Add to Inventory</button>
+        <button class="submit-btn">Add to Inventory</button>
       </div>
 
       <!-- Update Stock Section -->
-      <div id="update-stock-section" style="display: none;">
+      <div id="update-stock-section" class="tab-content" style="display: none;">
         <label for="update-product">Product Name:</label>
         <select id="update-product">
           <option>Milk</option>
@@ -892,7 +938,7 @@
         <label for="update-date">Delivered On:</label>
         <input type="date" id="update-date">
 
-        <button class="submit-btn">✅ Update Stock</button>
+        <button class="submit-btn">Update Stock</button>
       </div>
     </div>
   </div>
@@ -930,6 +976,19 @@
         addSection.style.display = 'none';
         updateSection.style.display = 'block';
       }
+    }
+
+    function showTab(tab) {
+      const buttons = document.querySelectorAll('.tab-button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      if (tab === 'add') {
+        buttons[0].classList.add('active');
+      } else {
+        buttons[1].classList.add('active');
+      }
+
+      // You can toggle form visibility based on tab here
     }
   </script>
 </body>
