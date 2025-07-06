@@ -923,27 +923,24 @@
       <form action="#" id="update-stock-section" class="tab-content" style="display: none;">
         <label for="update-product">Product Name:</label>
         <select id="update-product">
-          <option>Milk</option>
-          <option>Butter</option>
-          <option>Cheese</option>
-          <option>Yogurt</option>
-          <option>Ice Cream</option>
-          <option>Curd</option>
-          <option>Lassi</option>
-          <option>Buttermilk</option>
-          <option>Paneer</option>
-          <option>Ghee</option>
+          <option selected disabled>Select product</option>
+          <option value="1">Milk</option>
+          <option value="2">Butter</option>
+          <option value="3">Cheese</option>
+          <option value="4">Yogurt</option>
+          <option value="5">Ice Cream</option>
+          <option value="6">Curd</option>
+          <option value="7">Lassi</option>
+          <option value="8">Buttermilk</option>
+          <option value="9">Paneer</option>
+          <option value="10">Ghee</option>
         </select>
 
         <label for="update-batch">Select Batch:</label>
-        <select id="update-batch" multiple>
-          <!-- <option selected disabled>Select batch</option> -->
-          <option>Batch A (60L - Expires: 2025-07-10)</option>
-          <option>Batch B (30L - Expires: 2025-07-15)</option>
-        </select>
+        <div id="batch-checkboxes" style="margin-top: 10px;"></div>
 
         <label for="update-quantity">Quantity to Remove:</label>
-        <input type="number" id="update-quantity" placeholder="e.g., 30">
+        <input type="number" id="update-quantity" style="background-color: var(--bg-secondary);" disabled>
 
         <label for="update-date">Delivered On:</label>
         <input type="date" id="update-date">
@@ -1000,6 +997,53 @@
 
       // You can toggle form visibility based on tab here
     }
+
+    document.getElementById('update-product').addEventListener('change', function() {
+      const product = this.value;
+      const container = document.getElementById('batch-checkboxes');
+      container.innerHTML = '';
+      
+      if (!product) return;
+      
+      // Simulated batch data - in real app this would come from an API
+      const batches = {
+        '1': ['B123 (200 units)', 'B124 (150 units)'],
+        '2': ['B456 (100 units)', 'B457 (75 units)'],
+        '3': ['B789 (50 units)', 'B790 (60 units)'],
+        '4': ['B101 (120 units)'],
+        '5': ['B112 (80 units)'],
+        '6': ['B131 (160 units)'],
+        '7': ['B141 (60 units)'],
+        '8': ['B151 (50 units)'],
+        '9': ['B161 (90 units)'],
+        '10': ['B171 (40 units)']
+      };
+      
+      batches[product].forEach(batch => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <label style="display: block; margin: 5px 0;">
+            <input type="checkbox" name="batches" value="${batch}">
+            ${batch}
+          </label>
+        `;
+        container.appendChild(div);
+      });
+    });
+
+    // To get selected batches
+    function getSelectedBatches() {
+      const checkboxes = document.querySelectorAll('#batch-checkboxes input:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    // Example usage on form submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const selected = getSelectedBatches();
+      console.log('Selected batches:', selected);
+      // Process your form here
+    });
   </script>
 </body>
 </html>
