@@ -433,14 +433,27 @@
       font-size: 14px;
     }
 
-    input, select {
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
       width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      border-radius: 5px;
+      padding: 8px 4px;
+      border: none;
       border: 1px solid var(--border-color);
-      font-size: 14px;
+      border-radius: 5px;
+      background: transparent;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
+
+    input:focus,
+    select:focus {
+      border-color: #2e7d32; /* Green underline */
+      box-shadow: 0 2px 0 0 #2e7d32;
+    }
+
 
     .submit-btn, .open-btn {
       display: block;
@@ -671,11 +684,6 @@
           <h2 class="section-title">Product Stock Summary</h2>
           <div class="product-grid">
             <div class="product-card">
-              <div class="product-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                  <path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.35,44-29.77,16.3-80.35-44ZM128,120,47.65,76l33.9-18.56,80.34,44ZM40,90l80,43.78v85.79L40,175.82Zm176,85.78h0l-80,43.79V133.82l32-17.51V152a8,8,0,0,0,16,0V107.55L216,90v85.77Z"></path>
-                </svg>
-              </div>
               <h3 class="product-name">Milk</h3>
               <p class="product-quantity">1000 units</p>
             </div>
@@ -883,9 +891,10 @@
       </div>
 
       <!-- Add Stock Section -->
-      <div id="add-stock-section" class="tab-content" style="display: block;">
+      <form  action="#" id="add-stock-section" class="tab-content" style="display: block;">
         <label for="add-product">Product Name:</label>
         <select id="add-product">
+          <option selected disabled>Select product</option>
           <option>Milk</option>
           <option>Butter</option>
           <option>Cheese</option>
@@ -899,19 +908,19 @@
         </select>
 
         <label for="add-quantity">Batch Quantity:</label>
-        <input type="number" id="add-quantity" placeholder="e.g., 300">
+        <input type="number" id="add-quantity" placeholder="Enter batch quantity" min="1">
 
         <label for="add-production">Production Date:</label>
-        <input type="date" id="add-production">
+        <input type="date" id="add-production" placeholder="Select production date">
 
         <label for="add-expiry">Expiration Date:</label>
-        <input type="date" id="add-expiry">
+        <input type="date" id="add-expiry" placeholder="Select expiration date">
 
         <button class="submit-btn">Add to Inventory</button>
-      </div>
+      </form>
 
       <!-- Update Stock Section -->
-      <div id="update-stock-section" class="tab-content" style="display: none;">
+      <form action="#" id="update-stock-section" class="tab-content" style="display: none;">
         <label for="update-product">Product Name:</label>
         <select id="update-product">
           <option>Milk</option>
@@ -927,7 +936,8 @@
         </select>
 
         <label for="update-batch">Select Batch:</label>
-        <select id="update-batch">
+        <select id="update-batch" multiple>
+          <!-- <option selected disabled>Select batch</option> -->
           <option>Batch A (60L - Expires: 2025-07-10)</option>
           <option>Batch B (30L - Expires: 2025-07-15)</option>
         </select>
@@ -939,7 +949,7 @@
         <input type="date" id="update-date">
 
         <button class="submit-btn">Update Stock</button>
-      </div>
+      </form>
     </div>
   </div>
 
