@@ -1,26 +1,54 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import mysql.connector
+from datetime import date
+import random
 
-# Create FastAPI instance
+# Initialize FastAPI application
 app = FastAPI()
 
-# Sample input model using Pydantic
-class DemandInput(BaseModel):
+# Allow frontend connection
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Use specific domain in production
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+# Pydantic model for request validation
+class StockEntry(BaseModel):
     product_id: int
-    week: int
+    quantity: float
+    production_date: date
+    expiry_date: date
+    
 
-# Root endpoint
-@app.get("/")
-def read_root():
-    return {"message": "FastAPI backend is running!"}
+@app.post("/add-stock")
+def add_stock(data: StockEntry):
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root",
+            database="inventory",
+            port=3306
+        )
+        cursor = conn.cursor()
 
-# Test POST endpoint
-@app.post("/predict-demand")
-def predict_demand(data: DemandInput):
-    # Dummy logic for testing
-    predicted_values = [100, 110, 120, 130, 140]
-    return {
-        "product_id": data.product_id,
-        "current_week": data.week,
-        "predicted_demand": predicted_values
-    }
+        query = """
+            INSERT INTO inventory_batches (product_id, batch_id, production_date, expiry_date, quantity)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+
+        batch_id = date.today().strftime("%y%m%d") + str(random.randint(100, 999))
+
+        values = (data.product_id, batch_id, data.production_date, data.expiry_date, data.quantity)
+
+        cursor.execute(query, values)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"message": "Stock added successfully!"}
+    except Exception as e:
+        return {"message": f"Error: {e}"}

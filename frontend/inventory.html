@@ -891,20 +891,20 @@
       </div>
 
       <!-- Add Stock Section -->
-      <form  action="#" id="add-stock-section" class="tab-content" style="display: block;">
+      <form id="add-stock-section" class="tab-content" style="display: block;">
         <label for="add-product">Product Name:</label>
         <select id="add-product">
           <option selected disabled>Select product</option>
-          <option>Milk</option>
-          <option>Butter</option>
-          <option>Cheese</option>
-          <option>Yogurt</option>
-          <option>Ice Cream</option>
-          <option>Curd</option>
-          <option>Lassi</option>
-          <option>Buttermilk</option>
-          <option>Paneer</option>
-          <option>Ghee</option>
+          <option value=1>Milk</option>
+          <option value=2>Butter</option>
+          <option value=3>Cheese</option>
+          <option value=4>Yogurt</option>
+          <option value=5>Ice Cream</option>
+          <option value=6>Curd</option>
+          <option value=7>Lassi</option>
+          <option value=8>Buttermilk</option>
+          <option value=9>Paneer</option>
+          <option value=10>Ghee</option>
         </select>
 
         <label for="add-quantity">Batch Quantity:</label>
@@ -916,7 +916,7 @@
         <label for="add-expiry">Expiration Date:</label>
         <input type="date" id="add-expiry" placeholder="Select expiration date">
 
-        <button class="submit-btn">Add to Inventory</button>
+        <input type="submit" class="submit-btn" value="Add to Inventory">
       </form>
 
       <!-- Update Stock Section -->
@@ -1043,6 +1043,38 @@
       const selected = getSelectedBatches();
       console.log('Selected batches:', selected);
       // Process your form here
+    });
+
+
+    //stock add functionality
+    document.getElementById('add-stock-section').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const formData = {
+        product_id: parseInt(document.getElementById('add-product').value),
+        quantity: parseFloat(document.getElementById('add-quantity').value),
+        production_date: document.getElementById('add-production').value,
+        expiry_date: document.getElementById('add-expiry').value
+      };
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/add-stock', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        body: JSON.stringify(formData)
+      });
+
+        const result = await response.json();
+        alert(result.message);
+        if (result.message === 'Stock added successfully!') {
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error('Error adding stock:', error);
+        alert('Failed to connect to the server. Please try again later.');
+      }
     });
   </script>
 </body>
