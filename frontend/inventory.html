@@ -924,16 +924,16 @@
         <label for="update-product">Product Name:</label>
         <select id="update-product">
           <option selected disabled>Select product</option>
-          <option value="1">Milk</option>
-          <option value="2">Butter</option>
-          <option value="3">Cheese</option>
-          <option value="4">Yogurt</option>
-          <option value="5">Ice Cream</option>
-          <option value="6">Curd</option>
-          <option value="7">Lassi</option>
-          <option value="8">Buttermilk</option>
-          <option value="9">Paneer</option>
-          <option value="10">Ghee</option>
+          <option value=1>Milk</option>
+          <option value=2>Butter</option>
+          <option value=3>Cheese</option>
+          <option value=4>Yogurt</option>
+          <option value=5>Ice Cream</option>
+          <option value=6>Curd</option>
+          <option value=7>Lassi</option>
+          <option value=8>Buttermilk</option>
+          <option value=9>Paneer</option>
+          <option value=10>Ghee</option>
         </select>
 
         <label for="update-batch">Select Batch:</label>
@@ -998,37 +998,48 @@
       // You can toggle form visibility based on tab here
     }
 
-    document.getElementById('update-product').addEventListener('change', function() {
+    document.getElementById('update-product').addEventListener('change', async function() {
       const product = this.value;
       const container = document.getElementById('batch-checkboxes');
       container.innerHTML = '';
       
       if (!product) return;
-      
-      // Simulated batch data - in real app this would come from an API
-      const batches = {
-        '1': ['B123 (200 units)', 'B124 (150 units)'],
-        '2': ['B456 (100 units)', 'B457 (75 units)'],
-        '3': ['B789 (50 units)', 'B790 (60 units)'],
-        '4': ['B101 (120 units)'],
-        '5': ['B112 (80 units)'],
-        '6': ['B131 (160 units)'],
-        '7': ['B141 (60 units)'],
-        '8': ['B151 (50 units)'],
-        '9': ['B161 (90 units)'],
-        '10': ['B171 (40 units)']
-      };
-      
-      batches[product].forEach(batch => {
-        const div = document.createElement('div');
-        div.innerHTML = `
-          <label style="display: block; margin: 5px 0;">
-            <input type="checkbox" name="batches" value="${batch}">
-            ${batch}
-          </label>
-        `;
-        container.appendChild(div);
-      });
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/get-batches', 
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ product_id: product })
+        });
+        const batches = await response.json();
+
+        if (batches.length === 0) {
+          container.innerHTML = '<p style="color: gray;">This product currently has no stock.</p>';
+          return;
+        }
+
+        batches.forEach(batch => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <label style="display: block; margin: 8px 0;">
+              <input type="checkbox" name="batches" value="${batch.batch_id}">
+              <strong>${batch.batch_id}</strong> - ${batch.quantity} units
+              <br>
+              <small>Production: ${batch.production_date} | Expiry: ${batch.expiry_date}</small>
+            </label>
+          `;
+          container.appendChild(div);
+        });
+
+      } catch (error) {
+        console.error('Error fetching batches:', error);
+        alert('Failed to connect to the server. Please try again later.');
+        return;
+      }
+
     });
 
     // To get selected batches
@@ -1063,8 +1074,8 @@
           headers: {
             'Content-Type': 'application/json'
           },
-        body: JSON.stringify(formData)
-      });
+          body: JSON.stringify(formData)
+        });
 
         const result = await response.json();
         alert(result.message);

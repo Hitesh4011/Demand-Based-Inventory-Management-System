@@ -16,28 +16,35 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+# DB connection config
+db_config = {
+    "host": "localhost",
+    "user": "root",
+    "password": "root",
+    "database": "inventory",
+    "port": 3306
+}
+
 # Pydantic model for request validation
 class StockEntry(BaseModel):
     product_id: int
     quantity: float
     production_date: date
     expiry_date: date
+
+# Pydantic model for product input
+class ProductRequest(BaseModel):
+    product_id: int
     
 
 @app.post("/add-stock")
 def add_stock(data: StockEntry):
     try:
-        conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="root",
-            database="inventory",
-            port=3306
-        )
+        conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
 
         query = """
-            INSERT INTO inventory_batches (product_id, batch_id, production_date, expiry_date, quantity)
+            INSERT INTO inventory (product_id, batch_id, production_date, expiry_date, quantity)
             VALUES (%s, %s, %s, %s, %s)
         """
 
@@ -52,3 +59,26 @@ def add_stock(data: StockEntry):
         return {"message": "Stock added successfully!"}
     except Exception as e:
         return {"message": f"Error: {e}"}
+
+
+@app.post("/get-batches")
+def get_batches(request: ProductRequest):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT batch_id, quantity, production_date, expiry_date
+            FROM inventory
+            WHERE product_id = %s
+            ORDER BY expiry_date ASC
+        """, (request.product_id,))
+
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        return results
+
+    except Exception as e:
+        print("Error:", e)
