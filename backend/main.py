@@ -34,7 +34,12 @@ class StockEntry(BaseModel):
 # Pydantic model for product input
 class ProductRequest(BaseModel):
     product_id: int
-    
+
+# pydantic model for prooduct update
+class ProductUpdate(BaseModel):
+    batch_ids: list[int]
+    delivered_on: date
+    quantity_removed: float
 
 @app.post("/add-stock")
 def add_stock(data: StockEntry):
@@ -65,7 +70,7 @@ def get_batches(request: ProductRequest):
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT batch_id, quantity, production_date, expiry_date
+            SELECT batch_id, product_id, quantity, production_date, expiry_date
             FROM inventory
             WHERE product_id = %s
             ORDER BY expiry_date ASC
@@ -79,3 +84,38 @@ def get_batches(request: ProductRequest):
 
     except Exception as e:
         print("Error:", e)
+
+@app.post("/update-stock")
+def update_stock(request: ProductUpdate):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        # Step 1: Fetch product_id from first batch (assuming all batches are same product)
+        cursor.execute("SELECT product_id FROM inventory WHERE batch_id = %s", (request.batch_ids[0],))
+        result = cursor.fetchone()
+        if not result:
+            return {"message": "Invalid batch ID"}
+        product_id = result["product_id"]
+
+        # Step 2: Delete selected batches from inventory
+        format_strings = ','.join(['%s'] * len(request.batch_ids))
+        cursor.execute(
+            f"DELETE FROM inventory WHERE batch_id IN ({format_strings})",
+            tuple(request.batch_ids)
+        )
+
+        # Step 3: Insert into sales table
+        cursor.execute(
+            "INSERT INTO sales (product_id, quantity, sales_date) VALUES (%s, %s, %s)",
+            (product_id, request.quantity_removed, request.delivered_on)
+        )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return {"message": "Stock updated and sale recorded successfully!"}
+
+    except Exception as e:
+        return {"message": f"Error: {e}"}

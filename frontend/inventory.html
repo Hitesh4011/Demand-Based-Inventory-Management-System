@@ -331,7 +331,9 @@
     }
 
     #batch-checkboxes {
+      max-height: 300px;
       overflow-x: auto;
+      overflow-y: auto;
     }
 
     .batch-table {
@@ -1149,7 +1151,10 @@
         });
 
         const result = await response.json();
-        alert(result.message || 'Stock updated successfully!');
+        alert(result.message);
+        if (result.message === 'Stock updated and sale recorded successfully!') {
+          window.location.reload();
+        }
       } catch (err) {
         console.error(err);
         alert('Error updating stock');
