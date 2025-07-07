@@ -208,6 +208,11 @@
       background-color: var(--bg-primary);
     }
 
+    .product-card.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .product-icon {
       width: 24px;
       height: 24px;
@@ -634,6 +639,16 @@
         justify-content: center;
       }
     }
+
+    .main-content {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .main-content.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -713,55 +728,7 @@
           
           <h2 class="section-title">Product Stock Summary</h2>
           <div class="product-grid">
-            <div class="product-card">
-              <h3 class="product-name">Milk</h3>
-              <p class="product-quantity">1000 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Butter</h3>
-              <p class="product-quantity">500 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Cheese</h3>
-              <p class="product-quantity">750 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Yogurt</h3>
-              <p class="product-quantity">600 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Ice Cream</h3>
-              <p class="product-quantity">400 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Curd</h3>
-              <p class="product-quantity">800 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Lassi</h3>
-              <p class="product-quantity">300 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Buttermilk</h3>
-              <p class="product-quantity">250 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Paneer</h3>
-              <p class="product-quantity">450 units</p>
-            </div>
-            
-            <div class="product-card">
-              <h3 class="product-name">Ghee</h3>
-              <p class="product-quantity">200 units</p>
-            </div>
+            <!-- stock summary cards will be dynamically generated here -->
           </div>
           
           <h2 class="section-title">Batch-wise Inventory</h2>
@@ -1191,6 +1158,38 @@
         console.error('Error adding stock:', error);
         alert('Failed to connect to the server. Please try again later.');
       }
+    });
+
+
+    //Update the live stock data from database
+    async function loadProductSummary() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/product-summary');
+        const data = await response.json();
+
+        const container = document.querySelector('.product-grid');
+        container.innerHTML = ''; // Clear previous content
+
+        data.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'product-card';
+          card.innerHTML = `
+            <h3 class="product-name">${item.product_names}</h3>
+            <p class="product-quantity">${item.total_quantity} ${item.unit}</p>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Error loading product summary:', err);
+        alert(err.message);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', loadProductSummary);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.querySelector('.main-content').classList.add('visible');
+      }, 350); // Delay of 0.5 seconds
     });
   </script>
 </body>

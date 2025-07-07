@@ -119,3 +119,24 @@ def update_stock(request: ProductUpdate):
 
     except Exception as e:
         return {"message": f"Error: {e}"}
+    
+@app.get("/product-summary")
+def get_product_summary():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT p.product_id, p.product_names, p.unit, 
+                   IFNULL(SUM(i.quantity), 0) AS total_quantity
+            FROM products p
+            LEFT JOIN inventory i ON p.product_id = i.product_id
+            GROUP BY p.product_id, p.product_names, p.unit
+        """)
+        summary = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return summary
+
+    except Exception as e:
+        return {"message": f"Error: {e}"}
