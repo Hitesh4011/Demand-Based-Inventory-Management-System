@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import mysql.connector
 from datetime import date
-import random
 
 # Initialize FastAPI application
 app = FastAPI()
@@ -44,13 +43,11 @@ def add_stock(data: StockEntry):
         cursor = conn.cursor()
 
         query = """
-            INSERT INTO inventory (product_id, batch_id, production_date, expiry_date, quantity)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO inventory (product_id, production_date, expiry_date, quantity)
+            VALUES (%s, %s, %s, %s)
         """
 
-        batch_id = date.today().strftime("%y%m%d") + str(random.randint(100, 999))
-
-        values = (data.product_id, batch_id, data.production_date, data.expiry_date, data.quantity)
+        values = (data.product_id, data.production_date, data.expiry_date, data.quantity)
 
         cursor.execute(query, values)
         conn.commit()
