@@ -2,7 +2,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import mysql.connector
-from datetime import date
+from datetime import date, timedelta
+import pickle
+import pandas as pd
+
 
 # Initialize FastAPI application
 app = FastAPI()
@@ -140,3 +143,165 @@ def get_product_summary():
 
     except Exception as e:
         return {"message": f"Error: {e}"}
+    
+
+# Load your XGBoost model once
+with open("xgb_demand_model.pkl", "rb") as f:
+    model = pickle.load(f)
+
+
+@app.get("/forecast-summary")
+def forecast_summary():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        today = date.today()
+        current_week = today.isocalendar()[1]
+
+        results = []
+
+        for product_id in range(1, 11):
+            # Get product info and current stock
+            cursor.execute("""
+                SELECT p.product_names, p.unit, IFNULL(SUM(i.quantity), 0) as stock
+                FROM products p
+                LEFT JOIN inventory i ON p.product_id = i.product_id
+                WHERE p.product_id = %s
+                GROUP BY p.product_id
+            """, (product_id,))
+            prod = cursor.fetchone()
+            if not prod:
+                continue
+
+            # Fetch all past sales for the product
+            cursor.execute("""
+                SELECT sales_date, quantity FROM sales
+                WHERE product_id = %s AND sales_date <= %s
+            """, (product_id, today))
+            sales_rows = cursor.fetchall()
+
+
+            past_sales = [0, 0, 0, 0, 0]
+            past_dates = ["N/A", "N/A", "N/A", "N/A", "N/A"]
+
+            if not sales_rows:
+                lag = 0
+                rolling_avg = 0
+            else:
+                df = pd.DataFrame(sales_rows)
+                df['sales_date'] = pd.to_datetime(df['sales_date'])
+                df['quantity'] = pd.to_numeric(df['quantity'], errors='coerce')
+                df['year'] = df['sales_date'].dt.isocalendar().year
+                df['week'] = df['sales_date'].dt.isocalendar().week
+                df['sales_date'] = pd.to_datetime(df['sales_date'])
+                df = df.sort_values('sales_date')
+
+
+                df['year'] = df['sales_date'].dt.isocalendar().year
+                df['week'] = df['sales_date'].dt.isocalendar().week
+                df['week_start'] = df['sales_date'] - pd.to_timedelta(df['sales_date'].dt.weekday, unit='d')
+                weekly_sales = df.groupby('week_start')['quantity'].sum().sort_index()
+
+
+                # Past 5 sales entries (date + quantity)
+                recent_entries = weekly_sales.tail(5)
+                past_sales = recent_entries.tolist()
+                past_dates = recent_entries.index.strftime('%Y-%m-%d').tolist()
+
+
+                # Pad with 0s if fewer than 5
+                while len(past_sales) < 5:
+                    past_sales.insert(0, 0)
+                    past_dates.insert(0, "N/A")
+
+
+               # Prepare current and previous year-week
+                prev_date = today - timedelta(weeks=1)
+                if prev_date in weekly_sales.index:
+                    lag = int(weekly_sales.loc[prev_date])
+                else:
+                    lag = int(weekly_sales.iloc[-1]) if not weekly_sales.empty else 0
+
+
+                # rolling avg of up to last 4 full weeks
+                rolling_weeks = weekly_sales.tail(4)
+                rolling_avg = float(rolling_weeks.mean()) if not rolling_weeks.empty else float(lag)
+
+            # Prepare input for next 5 weeks
+            input_data = []
+            for i in range(5):
+                input_data.append({
+                    "product_id": product_id,
+                    "week": (current_week + i - 1) % 52 + 1,
+                    "lag": lag,
+                    "rolling_avg": rolling_avg
+                })
+
+            X_pred = pd.DataFrame(input_data)
+            X_pred.rename(columns={
+                "product_id": "Product ID",
+                "week": "week",
+                "lag": "Lag_1",
+                "rolling_avg": "Rolling_Avg_4"
+            }, inplace=True)
+
+            forecast = model.predict(X_pred).round().astype(int).tolist()
+            forecast_dates = [(today + timedelta(weeks=i)).strftime('%Y-%m-%d') for i in range(5)]
+            total_forecasted = sum(forecast)
+
+            # Determine reorder week
+            cumulative_demand = 0
+            reorder_week_index = None
+
+            for i, demand in enumerate(forecast):
+                cumulative_demand += demand
+                if cumulative_demand >= prod["stock"]:
+                    reorder_week_index = max(i - 1, 0)  # reorder one week before stock finishes
+                    break
+
+            if reorder_week_index is not None:
+                reorder_date = (today + timedelta(weeks=reorder_week_index)).strftime('%Y-%m-%d')
+                reorder_needed = True
+            else:
+                reorder_date = "N/A"
+                reorder_needed = False
+
+            # Reorder quantity
+            reorder_quantity = max(total_forecasted - prod["stock"], 0)
+
+            # Stock level
+            coverage = (prod["stock"] / total_forecasted) * 100 if total_forecasted > 0 else 100
+            if coverage >= 100:
+                stock_level = "Sufficient"
+            elif coverage >= 70:
+                stock_level = "Moderate"
+            else:
+                stock_level = "Critical"
+
+
+            results.append({
+                "product_id": product_id,
+                "product_name": prod["product_names"],
+                "unit": prod["unit"],
+                "current_stock": prod["stock"],
+                "forecast": forecast,
+                "forecast_dates": forecast_dates,
+                "total_forecasted": total_forecasted,
+                "past_sales": past_sales,
+                "past_dates": past_dates,
+                "week": current_week,
+                "reorder_needed": reorder_needed,
+                "reorder_date": reorder_date,
+                "reorder_quantity": reorder_quantity,
+                "stock_level": stock_level
+            })
+
+
+
+        cursor.close()
+        conn.close()
+        return results
+
+    except Exception as e:
+        return {"error": str(e)}
