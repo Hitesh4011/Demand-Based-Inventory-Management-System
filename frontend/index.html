@@ -262,66 +262,43 @@
     }
 
     .chart-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      padding: 0 16px 24px;
-      padding-top: 24px;
-    }
-
-    .chart-card {
+      width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      min-width: 288px;
-      flex: 1;
+      gap: 15px;
+      background: var(--bg-primary);
+      padding: 20px;
     }
 
-    .chart-title {
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .chart-subtitle {
-      font-size: 32px;
-      font-weight: 700;
-      line-height: 1.2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .trend-indicator {
+    .bar-row {
       display: flex;
-      gap: 4px;
+      align-items: center;
+      gap: 10px;
     }
 
-    .positive-trend {
-      color: var(--positive-color);
+    .label {
+      width: 100px;
+      text-align: right;
+      font-weight: 600;
     }
 
-    .chart-grid {
-      display: grid;
-      grid-auto-flow: column;
-      gap: 24px;
-      grid-template-rows: 1fr auto;
-      min-height: 180px;
-      align-items: end;
-      justify-items: center;
-      padding: 0 12px;
+    .bar-container {
+      flex: 1;
+      background: var(--bg-secondary);
+      border-radius: 8px;
     }
 
-    .chart-bar {
-      border-top: 2px solid var(--text-secondary);
-      background-color: var(--bg-secondary);
-      width: 100%;
+    .bar {
+      height: 24px;
+      background: #4caf50;
+      border-radius: 8px;
+      transition: width 0.4s ease;
     }
 
-    .bar-label {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.015em;
-      color: var(--text-secondary);
+    .quantity {
+      width: 100px;
+      text-align: left;
+      font-weight: bold;
     }
 
     /* Footer styles */
@@ -343,42 +320,6 @@
       color: var(--text-secondary);
       padding: 4px 16px 12px;
       text-align: center;
-    }
-
-    /* Container queries for table responsiveness */
-    @container (max-width: 120px) {
-      .column-product {
-        display: none;
-      }
-    }
-    
-    @container (max-width: 240px) {
-      .column-alert {
-        display: none;
-      }
-    }
-    
-    @container (max-width: 360px) {
-      .column-severity {
-        display: none;
-      }
-    }
-    
-    @container (max-width: 480px) {
-      .column-reorder-date {
-        display: none;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .stats-container {
-        flex-direction: column;
-      }
-      
-      .chart-grid {
-        grid-auto-flow: row;
-        grid-template-columns: repeat(3, 1fr);
-      }
     }
 
     /* Responsive styles */
@@ -420,7 +361,7 @@
       .content-layout {
         padding-top: 56px; /* push content below fixed top bar */
         flex-direction: column;
-        margin: auto;
+        /* margin: auto; */
       }
     }
     
@@ -442,6 +383,16 @@
       .main-content {
         justify-content: center;
       }
+    }
+
+    .main-content {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .main-content.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
@@ -522,11 +473,11 @@
           <div class="stats-container">
             <div class="stat-card">
               <p class="stat-label">Total Stock Quantity</p>
-              <p class="stat-value">12,500 units</p>
+              <p class="total-quantity stat-value"></p>
             </div>
             <div class="stat-card">
               <p class="stat-label">Total Products</p>
-              <p class="stat-value">250</p>
+              <p class="stat-value">10</p>
             </div>
             <div class="stat-card">
               <p class="stat-label">Low Stock Items</p>
@@ -615,32 +566,8 @@
           </div>
           
           <h2 class="section-title">Current Stock Status</h2>
-          <div class="chart-container">
-            <div class="chart-card">
-              <p class="chart-title">Stock Levels</p>
-              <p class="chart-subtitle">12,500 units</p>
-              <div class="trend-indicator">
-                <p class="table-data">Current</p>
-                <p class="positive-trend">+5%</p>
-              </div>
-
-              <div class="chart-grid">
-                <div class="chart-bar" style="height: 100%;"></div>
-                <p class="bar-label">Milk</p>
-                <div class="chart-bar" style="height: 100%;"></div>
-                <p class="bar-label">Butter</p>
-                <div class="chart-bar" style="height: 80%;"></div>
-                <p class="bar-label">Cheese</p>
-                <div class="chart-bar" style="height: 30%;"></div>
-                <p class="bar-label">Yogurt</p>
-                <div class="chart-bar" style="height: 20%;"></div>
-                <p class="bar-label">Ice Cream</p>
-                <div class="chart-bar" style="height: 90%;"></div>
-                <p class="bar-label">Curd</p>
-                <div class="chart-bar" style="height: 40%;"></div>
-                <p class="bar-label">Lassi</p>
-              </div>
-            </div>
+          <div class="scrollable-container">
+            <div class="chart-container" id="chart"></div>
           </div>
 
           <br>
@@ -660,6 +587,51 @@
       const sidebar = document.querySelector('.sidebar');
       sidebar.classList.toggle('open');
     }
+
+
+    async function loadProductSummary() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/product-summary');
+        const data = await response.json();
+
+        const chart = document.getElementById("chart");
+        const totalDiv = document.querySelector(".total-quantity");
+
+        const maxQty = Math.max(...data.map(p => p.total_quantity));
+        const totalSum = data.reduce((sum, item) => sum + item.total_quantity, 0);
+
+        totalDiv.textContent = `${totalSum} units`;
+
+        data.forEach(item => {
+          const barWidth = (item.total_quantity / maxQty) * 100;
+
+          const row = document.createElement("div");
+          row.className = "bar-row";
+
+          row.innerHTML = `
+            <div class="label">${item.product_names}</div>
+            <div class="bar-container">
+              <div class="bar" style="width: ${barWidth}%;"></div>
+            </div>
+            <div class="quantity">${item.total_quantity} ${item.unit}</div>
+          `;
+
+          chart.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error('Error loading product summary:', err);
+        alert(err.message);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadProductSummary);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.querySelector('.main-content').classList.add('visible');
+      }, 350); // Delay of 0.5 seconds
+    });
   </script>
 
 
