@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Demand Forecasting</title>
+  <title>Flavi Dairy - Demand Forecasting</title>
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900&display=swap">
-  <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* CSS Variables */
     :root {
@@ -26,6 +26,11 @@
       --sidebar-width: 320px;
       --content-max-width: 960px;
       --border-radius: 0.5rem;
+      --past-color: #6c757d;
+      --forecast-color: #4574a1;
+      --critical-color: #dc3545;
+      --moderate-color: #ffc107;
+      --sufficient-color: #28a745;
     }
 
     /* Base Styles */
@@ -41,6 +46,7 @@
       color: var(--text-primary);
       min-height: 100vh;
       overflow-x: hidden;
+      line-height: 1.5;
     }
 
     .app-container {
@@ -81,8 +87,9 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      background-color: white;
+      background-color: var(--bg-primary);
       padding: 16px;
+      border-right: 1px solid var(--border-color);
     }
 
     .user-info {
@@ -99,6 +106,12 @@
       border-radius: 50%;
       width: 40px;
       height: 40px;
+      background-color: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #4574a1;
     }
 
     .user-name {
@@ -121,15 +134,22 @@
       border-radius: 8px;
       text-decoration: none;
       color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .nav-item:hover {
+      background-color: var(--bg-secondary);
     }
 
     .nav-item.active {
       background-color: var(--bg-secondary);
+      font-weight: 500;
     }
 
     .nav-icon {
       width: 24px;
       height: 24px;
+      color: var(--text-secondary);
     }
 
     .nav-label {
@@ -162,6 +182,7 @@
       flex-direction: column;
       flex: 1;
       max-width: var(--content-max-width);
+      width: 100%;
     }
 
     .page-header {
@@ -170,6 +191,7 @@
       justify-content: space-between;
       gap: var(--spacing-md);
       padding: var(--spacing-md);
+      margin-bottom: 1rem;
     }
 
     .header-title {
@@ -184,90 +206,136 @@
       font-size: 0.875rem;
       font-weight: 400;
       line-height: normal;
+      margin-top: 0.5rem;
     }
 
-    /* Forecast Sections */
-    .section-title {
-      font-size: 1.375rem;
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.015em;
+    /* Forecast Grid */
+    .forecast-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
       padding: 0 var(--spacing-md);
-      padding-bottom: var(--spacing-md);
-      padding-top: var(--spacing-lg);
-    }
-
-    .forecast-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--spacing-lg);
-      padding: 0 var(--spacing-md);
-      padding-top: var(--spacing-lg);
-      padding-bottom: var(--spacing-lg);
     }
 
     .forecast-card {
-      display: flex;
-      flex: 1;
-      min-width: 288px;
-      flex-direction: column;
-      gap: var(--spacing-sm);
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      padding: var(--spacing-lg);
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .forecast-title {
+    .forecast-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .forecast-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
       font-size: 1rem;
-      font-weight: 500;
-      line-height: normal;
+      margin-bottom: 12px;
     }
 
-    .chart-container {
+    .forecast-icon {
+      font-size: 22px;
+      background-color: #e2e8f0;
+      color: #334155;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
       display: flex;
-      min-height: 180px;
-      flex: 1;
-      flex-direction: column;
-      gap: var(--spacing-xl);
-      padding: var(--spacing-md) 0;
+      align-items: center;
+      justify-content: center;
     }
 
-    .week-labels {
-      display: flex;
-      justify-content: space-around;
+    .forecast-canvas {
+      width: 100% !important; /* Important to override Chart.js inline styles */
+      height: 200px !important;
+      margin: 12px 0;
     }
 
-    .week-label {
-      color: var(--text-secondary);
-      font-size: 0.8125rem;
-      font-weight: 700;
-      letter-spacing: 0.015em;
-      line-height: normal;
+    .stats {
+      margin-top: 12px;
     }
 
-    .data-table {
-      padding: var(--spacing-md);
-    }
-
-    .data-row {
+    .stats p {
+      font-size: 0.9rem;
+      margin: 4px 0;
       display: flex;
       justify-content: space-between;
-      gap: 1.5rem;
-      padding: var(--spacing-sm) 0;
     }
 
-    .data-label {
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-      font-weight: 400;
-      line-height: normal;
+    .stats p span:last-child {
+      font-weight: 500;
     }
 
-    .data-value {
-      font-size: 0.875rem;
-      font-weight: 400;
-      line-height: normal;
-      text-align: right;
+    .status {
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .status.Critical { 
+      color: #dc2626;
+      background-color: #fee2e2;
+    }
+    .status.Moderate { 
+      color: #d97706;
+      background-color: #fef3c7;
+    }
+    .status.Sufficient { 
+      color: #16a34a;
+      background-color: #dcfce7;
+    }
+
+    .reorder {
+      background-color: #fff7ed;
+      color: #c2410c;
+      font-size: 0.85rem;
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Loading state */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 300px;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(69, 116, 161, 0.2);
+      border-top: 4px solid #4574a1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Error message */
+    .error-message {
+      padding: 1rem;
+      background-color: #ffebee;
+      color: #b71c1c;
+      border-radius: var(--border-radius);
+      margin: 1rem;
+      text-align: center;
     }
 
     /* Responsive styles */
@@ -279,7 +347,7 @@
         right: 0;
         height: 56px;
         padding: 0 16px;
-        background-color: white;
+        background-color: var(--bg-primary);
         display: flex;
         align-items: center;
         z-index: 1000;
@@ -296,7 +364,7 @@
         left: -320px;
         width: 280px;
         height: 100%;
-        background-color: white;
+        background-color: var(--bg-primary);
         transition: left 0.3s ease;
         z-index: 1000;
         box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
@@ -307,9 +375,8 @@
       }
 
       .content-layout {
-        padding-top: 56px; /* push content below fixed top bar */
+        padding-top: 56px;
         flex-direction: column;
-        margin: auto;
       }
     }
     
@@ -320,16 +387,10 @@
         left: 0;
         height: 100vh;
         overflow-y: auto;
-        margin-left: 30px;
-        margin-top: 20px;
       }
 
       .content-layout {
         margin-left: 320px;
-      }
-
-      .main-content {
-        justify-content: center;
       }
     }
 
@@ -421,99 +482,16 @@
             </div>
           </header>
 
-          <!-- Milk Forecast -->
-          <h2 class="section-title">Milk Forecast</h2>
-          <div class="forecast-container">
-            <div class="forecast-card">
-              <h3 class="forecast-title">Milk Demand Forecast</h3>
-              <div class="chart-container">
-                <svg width="100%" height="148" viewBox="-3 0 478 150" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                  <path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z" fill="url(#paint0_linear_1131_5935)"></path>
-                  <path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#4574a1" stroke-width="3" stroke-linecap="round"></path>
-                  <defs>
-                    <linearGradient id="paint0_linear_1131_5935" x1="236" y1="1" x2="236" y2="149" gradientUnits="userSpaceOnUse">
-                      <stop stop-color="#e6edf4"></stop>
-                      <stop offset="1" stop-color="#e6edf4" stop-opacity="0"></stop>
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div class="week-labels">
-                  <span class="week-label">Week 1</span>
-                  <span class="week-label">Week 2</span>
-                  <span class="week-label">Week 3</span>
-                  <span class="week-label">Week 4</span>
-                  <span class="week-label">Week 5</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="data-table">
-            <div class="data-row">
-              <span class="data-label">Current Stock</span>
-              <span class="data-value">1500 units</span>
-            </div>
-            <div class="data-row">
-              <span class="data-label">Total Forecasted Demand</span>
-              <span class="data-value">1200 units</span>
-            </div>
-            <div class="data-row">
-              <span class="data-label">Status</span>
-              <span class="data-value">Sufficient Stock</span>
-            </div>
-            <div class="data-row">
-              <span class="data-label">Reorder Recommendation</span>
-              <span class="data-value">N/A</span>
-            </div>
+          <div class="loading-container" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading forecast data...</p>
           </div>
 
-          <!-- Butter Forecast -->
-          <h2 class="section-title">Butter Forecast</h2>
-          <div class="forecast-container">
-            <div class="forecast-card">
-              <h3 class="forecast-title">Butter Demand Forecast</h3>
-              <div class="chart-container">
-                <svg width="100%" height="148" viewBox="-3 0 478 150" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                  <path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z" fill="url(#paint0_linear_1131_5935)"></path>
-                  <path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#4574a1" stroke-width="3" stroke-linecap="round"></path>
-                  <defs>
-                    <linearGradient id="paint0_linear_1131_5935" x1="236" y1="1" x2="236" y2="149" gradientUnits="userSpaceOnUse">
-                      <stop stop-color="#e6edf4"></stop>
-                      <stop offset="1" stop-color="#e6edf4" stop-opacity="0"></stop>
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div class="week-labels">
-                  <span class="week-label">Week 1</span>
-                  <span class="week-label">Week 2</span>
-                  <span class="week-label">Week 3</span>
-                  <span class="week-label">Week 4</span>
-                  <span class="week-label">Week 5</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="data-table">
-            <div class="data-row">
-              <span class="data-label">Current Stock</span>
-              <span class="data-value">1000 units</span>
-            </div>
-            <div class="data-row">
-              <span class="data-label">Total Forecasted Demand</span>
-              <span class="data-value">800 units</span>
-            </div>
-            <div class="data-row">
-              <span class="data-label">Status</span>
-              <span class="data-value">Sufficient Stock</span>
-            </div>
-            <div class="data-row">
-              <span class="data-label">Reorder Recommendation</span>
-              <span class="data-value">N/A</span>
-            </div>
+          <div class="error-message" id="error-message" style="display: none;">
+            Error loading forecast data. Please try again later.
           </div>
 
-          <!-- Additional forecast sections would follow the same pattern -->
-          <!-- Cheese, Yogurt, Ice Cream, Curd, Lassi, Buttermilk, Paneer, Ghee -->
-          
+          <div class="forecast-grid" id="forecastGrid"></div>
         </main>
       </div>
     </div>
@@ -525,11 +503,183 @@
       sidebar.classList.toggle('open');
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
+    async function fetchData() {
+      try {
+        // For demo purposes, we'll use mock data
+        // In production, you would fetch from your API:
+        const res = await fetch("http://127.0.0.1:8000/forecast-summary");
+        if (!res.ok) throw new Error("API fetch failed");
+        return await res.json();
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        document.getElementById('error-message').style.display = 'block';
+        return [];
+      }
+    }
+
+    function createForecastCard(product) {
+      const card = document.createElement('div');
+      card.className = 'forecast-card';
+
+      const header = document.createElement('div');
+      header.className = 'forecast-header';
+      header.innerHTML = `<span class="forecast-icon">${product.product_name[0]}</span>${product.product_name}`;
+
+      const canvas = document.createElement('canvas');
+      canvas.className = 'forecast-canvas';
+      
+      const stats = document.createElement('div');
+      stats.className = 'stats';
+      stats.innerHTML = `
+        <p><span>Stock:</span> <span>${product.current_stock} ${product.unit}</span></p>
+        <p><span>Forecast:</span> <span>${product.total_forecasted} ${product.unit}</span></p>
+        <p><span>Status:</span> <span class="status ${product.stock_level}">${product.stock_level}</span></p>
+      `;
+
+      card.appendChild(header);
+      card.appendChild(canvas);
+      card.appendChild(stats);
+
+      if (product.reorder_needed) {
+        const reorder = document.createElement('div');
+        reorder.className = 'reorder';
+        reorder.innerHTML = `<span>🔄 Reorder ${product.reorder_quantity} ${product.unit} by ${product.reorder_date}</span>`;
+        card.appendChild(reorder);
+      }
+
+      return card;
+    }
+
+    function renderChart(canvas, product) {
+      const allValues = [...product.past_sales, ...product.forecast];
+      const allLabels = [...product.past_dates, ...product.forecast_dates].map(d => {
+        if (d === "N/A") return "";
+        const date = new Date(d);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      });
+
+      // Get the last index of past data to draw a separator line
+      const lastPastIndex = product.past_sales.length - 1;
+      
+      new Chart(canvas, {
+        type: "line",
+        data: {
+          labels: allLabels,
+          datasets: [
+            {
+              label: "Past Demand",
+              data: product.past_sales,
+              borderColor: "#6b7280", // grey
+              backgroundColor: "rgba(107, 114, 128, 0.1)",
+              tension: 0.4,
+              pointRadius: 0,
+              fill: true,
+            },
+            {
+              label: "Forecasted Demand",
+              data: [...Array(product.past_sales.length).fill(null), ...product.forecast],
+              borderColor: "#3b82f6", // blue
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              tension: 0.4,
+              pointRadius: 0,
+              fill: true,
+              borderDash: [4, 4],
+            },
+            {
+              label: "Current Stock",
+              data: Array(product.past_sales.length + product.forecast.length).fill(product.current_stock),
+              borderColor: '#dc2626',
+              borderWidth: 1,
+              borderDash: [5, 5],
+              pointRadius: 0,
+              fill: false
+            }
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top', // or 'bottom'
+              labels: {
+                boxWidth: 12,
+                font: { size: 12 },
+                color: '#374151'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.datasetIndex === 0 ? 'Demand' : 'Current Stock'}: ${context.raw}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { 
+                maxRotation: 0,
+                minRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 6
+              }
+            },
+            y: { 
+              display: false,
+              beginAtZero: true 
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+    }
+
+    async function init() {
+      try {
+        const loading = document.getElementById('loading');
+        const container = document.getElementById("forecastGrid");
+        
+        // Show loading state
+        loading.style.display = 'flex';
+        container.innerHTML = '';
+        
+        const data = await fetchData();
+        
+        // Hide loading state
+        loading.style.display = 'none';
+        
+        if (data.length === 0) {
+          document.getElementById('error-message').style.display = 'block';
+          return;
+        }
+        
+        // Create cards for each product
+        data.forEach(product => {
+          const card = createForecastCard(product);
+          container.appendChild(card);
+          
+          // Render chart after card is added to DOM
+          const canvas = card.querySelector('.forecast-canvas');
+          renderChart(canvas, product);
+        });
+        
+        // Show content with fade-in animation
         document.querySelector('.main-content').classList.add('visible');
-      }, 350); // Delay of 0.5 seconds
-    });
+        
+      } catch (err) {
+        console.error("Initialization error:", err);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-message').style.display = 'block';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
