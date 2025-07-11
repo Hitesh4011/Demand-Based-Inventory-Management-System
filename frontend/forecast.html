@@ -46,7 +46,6 @@
       color: var(--text-primary);
       min-height: 100vh;
       overflow-x: hidden;
-      line-height: 1.5;
     }
 
     .app-container {
@@ -89,7 +88,6 @@
       justify-content: space-between;
       background-color: var(--bg-primary);
       padding: 16px;
-      border-right: 1px solid var(--border-color);
     }
 
     .user-info {
@@ -106,12 +104,6 @@
       border-radius: 50%;
       width: 40px;
       height: 40px;
-      background-color: #e9ecef;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #4574a1;
     }
 
     .user-name {
@@ -134,22 +126,15 @@
       border-radius: 8px;
       text-decoration: none;
       color: var(--text-primary);
-      transition: all 0.2s ease;
-    }
-
-    .nav-item:hover {
-      background-color: var(--bg-secondary);
     }
 
     .nav-item.active {
       background-color: var(--bg-secondary);
-      font-weight: 500;
     }
 
     .nav-icon {
       width: 24px;
       height: 24px;
-      color: var(--text-secondary);
     }
 
     .nav-label {
@@ -182,7 +167,6 @@
       flex-direction: column;
       flex: 1;
       max-width: var(--content-max-width);
-      width: 100%;
     }
 
     .page-header {
@@ -191,22 +175,22 @@
       justify-content: space-between;
       gap: var(--spacing-md);
       padding: var(--spacing-md);
-      margin-bottom: 1rem;
     }
 
-    .header-title {
+    .page-title {
       font-size: 2rem;
       font-weight: 700;
       letter-spacing: -0.015em;
       line-height: 1.2;
+      min-width: 288px;
     }
 
-    .header-description {
-      color: var(--text-secondary);
-      font-size: 0.875rem;
+    .page-description {
+      font-size: 1rem;
       font-weight: 400;
       line-height: normal;
-      margin-top: 0.5rem;
+      padding: 0 var(--spacing-md);
+      padding-bottom: var(--spacing-md);
     }
 
     /* Forecast Grid */
@@ -387,6 +371,8 @@
         left: 0;
         height: 100vh;
         overflow-y: auto;
+        margin-left: 30px;
+        margin-top: 20px;
       }
 
       .content-layout {
