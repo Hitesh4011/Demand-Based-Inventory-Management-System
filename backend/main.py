@@ -44,6 +44,13 @@ class ProductUpdate(BaseModel):
     delivered_on: date
     quantity_removed: float
 
+class ExpiryAlert(BaseModel):
+    product_name: str
+    batch_id: str
+    expiry_date: str
+    days_remaining: int
+    severity: str
+
 @app.post("/add-stock")
 def add_stock(data: StockEntry):
     try:
@@ -302,6 +309,46 @@ def forecast_summary():
         cursor.close()
         conn.close()
         return results
+
+    except Exception as e:
+        return {"error": str(e)}
+    
+@app.get("/expiring-alerts")
+def get_expiring_alerts():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT i.batch_id, i.expiry_date, p.product_names AS product_name
+            FROM inventory i
+            JOIN products p ON i.product_id = p.product_id
+            WHERE DATEDIFF(i.expiry_date, CURDATE()) <= 15
+            ORDER BY i.expiry_date ASC
+        """)
+        
+        items = cursor.fetchall()
+        result = []
+
+        for row in items:
+            days_remaining = (row["expiry_date"] - date.today()).days
+            severity = (
+                "Critical" if days_remaining <= 3 else
+                "Warning" if days_remaining <= 7 else
+                "Safe"
+            )
+
+            result.append({
+                "product_name": row["product_name"],
+                "batch_id": row["batch_id"],
+                "expiry_date": row["expiry_date"].strftime("%Y-%m-%d"),
+                "days_remaining": days_remaining,
+                "severity": severity
+            })
+
+        cursor.close()
+        conn.close()
+        return result
 
     except Exception as e:
         return {"error": str(e)}

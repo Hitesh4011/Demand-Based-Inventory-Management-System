@@ -394,6 +394,93 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Modal Content Box */
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 95%;
+      max-width: 800px;
+      max-height: 75vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .data-table {
+      min-width: 500px;
+      width: 100%;
+    }
+
+    /* Close Button */
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 18px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #555;
+      cursor: pointer;
+    }
+
+    /* Styled View More Button */
+    .view-more {
+      color: #007bff;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: color 0.2s ease;
+      display: inline-block;
+    }
+
+    .view-more:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px 12px;
+      padding-top: 20px;
+    }
+
+    .severity-critical {
+      color: #e53935;
+    }
+    .severity-warning {
+      color: #f9a825;
+    }
+    .severity-safe {
+      color: #43a047;
+    }
+
+    .no-alert {
+      text-align: center;
+      padding: 16px;
+      font-size: 15px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -446,7 +533,7 @@
               <a href="forecast.html" class="nav-item">
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                        <path d="M216,40H136V24a8,8,0,0,0-16,0V40H40A16,16,0,0,0,24,56V176a16,16,0,0,0,16,16H79.36L57.75,219a8,8,0,0,0,12.5,10l29.59-37h56.32l29.59,37a8,8,0,1,0,12.5-10l-21.61-27H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,136H40V56H216V176ZM104,120v24a8,8,0,0,1-16,0V120a8,8,0,0,1,16,0Zm32-16v40a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm32-16v56a8,8,0,0,1-16,0V88a8,8,0,0,1,16,0Z"></path>
+                        <path d="M216,40H136V24a8,8,0,0,0-16,0V40H40A16,16,0,0,0,24,56V176a16,16,0,0,0,16,16H79.36L57.75,219a8,8,0,0,0,12.5,10l29.59-37h56.32l29.59,37a8,8,0,1,0,12.5-10l-21.61-27H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,136H40V56H216V176ZM104,120v24a8,8,0,0,1-16,0V120a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path>
                     </svg>
                 </div>
                 <p class="nav-label">Forecasting</p>
@@ -481,57 +568,41 @@
             </div>
             <div class="stat-card">
               <p class="stat-label">Low Stock Items</p>
-              <p class="stat-value">15</p>
+              <p class="low-stock stat-value"></p>
             </div>
             <div class="stat-card">
               <p class="stat-label">Expiring Items</p>
-              <p class="stat-value">5</p>
+              <p class="expiring-count stat-value"></p>
             </div>
           </div>
-          
-          <h2 class="section-title">Live Alerts</h2>
-          <div class="table-container">
-            <table class="data-table">
+
+          <div class="section-header">
+            <h2 class="section-title">Expiring Soon Alerts</h2>
+            <div class="view-more" onclick="openExpiryModal()">View more</div>
+          </div>
+
+          <div class="table-container" id="expiry-alerts-container">
+            <table class="data-table" id="expiry-alerts-table">
               <thead>
                 <tr>
                   <th class="column-product">Product Name</th>
-                  <th class="column-alert">Alert Type</th>
+                  <th class="column-batch">Batch ID</th>
+                  <th class="column-expiry">Expiry Date</th>
+                  <th class="column-remaining">Days Left</th>
                   <th class="column-severity">Severity</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td class="product-name">Whole Milk</td>
-                  <td class="table-data">Low Stock</td>
-                  <td>
-                    <button class="severity-btn">
-                      <span class="truncate">Critical</span>
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="product-name">Cheddar Cheese</td>
-                  <td class="table-data">Expiring Soon</td>
-                  <td>
-                    <button class="severity-btn">
-                      <span class="truncate">Warning</span>
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="product-name">Vanilla Yogurt</td>
-                  <td class="table-data">Low Stock</td>
-                  <td>
-                    <button class="severity-btn">
-                      <span class="truncate">Warning</span>
-                    </button>
-                  </td>
-                </tr>
+              <tbody id="expiry-alerts-body">
+                <!-- Dynamic rows go here -->
               </tbody>
             </table>
+            <div class="no-alert" id="no-alert-msg" style="display: none;">🎉 No products are expiring soon.</div>
           </div>
           
-          <h2 class="section-title">Reorder Suggestions</h2>
+          <div class="section-header">
+            <h2 class="section-title">Reorder Suggestions</h2>
+            <p class="view-more" onclick="openReorderModal()">View more</p>
+          </div>
           <div class="table-container">
             <table class="data-table">
               <thead>
@@ -542,28 +613,12 @@
                   <th class="column-reorder-date">Recommended Reorder Date</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td class="product-name">Whole Milk</td>
-                  <td class="table-data">500 units</td>
-                  <td class="table-data">1000 units</td>
-                  <td class="table-data">2024-08-15</td>
-                </tr>
-                <tr>
-                  <td class="product-name">Cheddar Cheese</td>
-                  <td class="table-data">200 units</td>
-                  <td class="table-data">500 units</td>
-                  <td class="table-data">2024-08-20</td>
-                </tr>
-                <tr>
-                  <td class="product-name">Vanilla Yogurt</td>
-                  <td class="table-data">100 units</td>
-                  <td class="table-data">300 units</td>
-                  <td class="table-data">2024-08-25</td>
-                </tr>
-              </tbody>
+              <tbody id="reorderBody"></tbody>
             </table>
           </div>
+
+          
+
           
           <h2 class="section-title">Current Stock Status</h2>
           <div class="scrollable-container">
@@ -582,13 +637,59 @@
     </div>
   </div>
 
+  <div id="reorderModalBox" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeReorderModal()">&times;</span>
+      <h2>All Reorder Suggestions</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Current Stock</th>
+              <th>Reorder Quantity</th>
+              <th>Reorder Date</th>
+            </tr>
+          </thead>
+          <tbody id="reorderModalBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Expiry Modal -->
+  <div id="expiryModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeExpiryModal()">&times;</span>
+      <h3>All Expiring Products</h3>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Batch ID</th>
+              <th>Expiry Date</th>
+              <th>Days Left</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody id="expiry-modal-body">
+            <!-- Modal data will load here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
   <script>
     function toggleMenu() {
       const sidebar = document.querySelector('.sidebar');
       sidebar.classList.toggle('open');
     }
 
-
+    //update current inventory summary
     async function loadProductSummary() {
       try {
         const response = await fetch('http://127.0.0.1:8000/product-summary');
@@ -625,12 +726,210 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadProductSummary);
 
-    window.addEventListener('DOMContentLoaded', () => {
+    //load product forecasting
+    async function populateReorderTable() {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/forecast-summary");
+        const data = await res.json();
+
+        const reorderItems = data
+          .filter(item => item.reorder_needed)
+          .sort((a, b) => new Date(a.reorder_date) - new Date(b.reorder_date));
+
+        const lowStockCount = reorderItems.filter(item =>
+          item.stock_level === "Critical" || item.stock_level === "Moderate"
+        ).length;
+
+        document.querySelector(".low-stock").textContent = lowStockCount;
+
+        const tableBody = document.getElementById("reorderBody");
+        tableBody.innerHTML = ""; // clear existing rows
+
+        reorderItems.slice(0, 3).forEach(item => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="product-name">${item.product_name}</td>
+            <td class="table-data">${item.current_stock} ${item.unit}</td>
+            <td class="table-data">${item.reorder_quantity} ${item.unit}</td>
+            <td class="table-data">${item.reorder_date}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        // Show "View More" button if more than 3
+        if (reorderItems.length > 3) {
+          document.getElementById("viewMoreBtn").style.display = "inline-block";
+        }
+      } catch (err) {
+        console.error("Failed to load reorder suggestions", err);
+      }
+    }
+
+    async function renderReorderTables() {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/forecast-summary");
+        const data = await res.json();
+
+        const reorderItems = data
+          .filter(item => item.reorder_needed)
+          .sort((a, b) => new Date(a.reorder_date) - new Date(b.reorder_date));
+
+        // Update low stock count
+        const lowStockCount = reorderItems.filter(item =>
+          item.stock_level === "Critical" || item.stock_level === "Moderate"
+        ).length;
+        document.querySelector(".low-stock").textContent = lowStockCount;
+
+        // Render main table (top 3)
+        const tableBody = document.getElementById("reorderBody");
+        tableBody.innerHTML = "";
+        reorderItems.slice(0, 3).forEach(item => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="product-name">${item.product_name}</td>
+            <td class="table-data">${item.current_stock} ${item.unit}</td>
+            <td class="table-data">${item.reorder_quantity} ${item.unit}</td>
+            <td class="table-data">${item.reorder_date}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        // Store for modal
+        window.reorderData = reorderItems;
+
+        // Show "View More" button if more than 3
+        const viewMoreBtn = document.getElementById("viewMoreBtn");
+        if (viewMoreBtn) {
+          viewMoreBtn.style.display = reorderItems.length > 3 ? "inline-block" : "none";
+        }
+      } catch (err) {
+        console.error("Failed to load reorder suggestions", err);
+      }
+    }
+
+    // Update modal function to use window.reorderData
+    function openReorderModal() {
+      const modal = document.getElementById("reorderModalBox");
+      const tbody = document.getElementById("reorderModalBody");
+      tbody.innerHTML = "";
+
+      (window.reorderData || []).forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.product_name}</td>
+          <td>${item.current_stock} ${item.unit}</td>
+          <td>${item.reorder_quantity} ${item.unit}</td>
+          <td>${item.reorder_date}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      modal.style.display = "flex";
+    }
+
+    function closeReorderModal() {
+      document.getElementById("reorderModalBox").style.display = "none";
+    }
+
+    async function loadExpiryAlerts() {
+      try {
+        const res = await fetch("http://localhost:8000/expiring-alerts");
+        const data = await res.json();
+        const tableBody = document.getElementById("expiry-alerts-body");
+        const noAlertMsg = document.getElementById("no-alert-msg");
+        const expiringItems = document.querySelector(".expiring-count");
+
+        expiringItems.textContent = data.length;
+
+        tableBody.innerHTML = "";
+
+
+
+        if (data.length === 0) {
+          noAlertMsg.style.display = "block";
+          return;
+        }
+
+        noAlertMsg.style.display = "none";
+
+        data.slice(0, 3).forEach(item => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td class="product-name">${item.product_name}</td>
+            <td class="table-data">${item.batch_id}</td>
+            <td class="table-data">${item.expiry_date}</td>
+            <td class="table-data">${item.days_remaining} days</td>
+            <td>
+              <div class="severity-btn">
+                <span class="truncate ${getSeverityClass(item.severity)}">${item.severity}</span>
+              </div>
+            </td>
+          `;
+
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error("Error loading expiry alerts:", error);
+      }
+    }
+
+    function getSeverityClass(severity) {
+      switch (severity) {
+        case "Critical": return "severity-critical";
+        case "Warning": return "severity-warning";
+        case "Safe": return "severity-safe";
+        default: return "";
+      }
+    }
+
+
+    async function openExpiryModal() {
+      const modal = document.getElementById("expiryModal");
+      const body = document.getElementById("expiry-modal-body");
+
+      body.innerHTML = "";
+
+      try{
+        const res = await fetch("http://localhost:8000/expiring-alerts");
+        const data = await res.json();
+
+        if (data.length === 0) {
+          body.innerHTML = `<tr><td colspan="5" style="text-align:center;">No expiring products.</td></tr>`;
+        } else {
+          data.forEach(item => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.product_name}</td>
+              <td>${item.batch_id}</td>
+              <td>${item.expiry_date}</td>
+              <td>${item.days_remaining} days</td>
+              <td><div class="severity-btn"><span class="truncate ${getSeverityClass(item.severity)}">${item.severity}</span></div></td>
+            `;
+            body.appendChild(row);
+          });
+        }
+
+        modal.style.display = "flex";
+      } catch (error) {
+          console.error("Error loading expiry alerts:", error);
+        }
+    }
+
+    function closeExpiryModal() {
+      document.getElementById("expiryModal").style.display = "none";
+    }
+
+    window.addEventListener('DOMContentLoaded', loadProductSummary);
+    window.addEventListener('DOMContentLoaded', renderReorderTables); // Use only this for reorder
+    window.addEventListener('DOMContentLoaded', loadExpiryAlerts);
+    window.addEventListener("DOMContentLoaded", populateReorderTable);
+
+    window.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
-        document.querySelector('.main-content').classList.add('visible');
-      }, 350); // Delay of 0.5 seconds
+        document.querySelector(".main-content").classList.add("visible");
+      }, 500); // Delay of 0.5 seconds
     });
   </script>
 
