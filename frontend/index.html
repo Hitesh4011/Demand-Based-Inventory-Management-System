@@ -834,7 +834,7 @@
 
     async function loadExpiryAlerts() {
       try {
-        const res = await fetch("http://localhost:8000/expiring-alerts");
+        const res = await fetch("/expiring-alerts");
         const data = await res.json();
         const tableBody = document.getElementById("expiry-alerts-body");
         const noAlertMsg = document.getElementById("no-alert-msg");
@@ -892,7 +892,7 @@
       body.innerHTML = "";
 
       try{
-        const res = await fetch("http://localhost:8000/expiring-alerts");
+        const res = await fetch("/expiring-alerts");
         const data = await res.json();
 
         if (data.length === 0) {

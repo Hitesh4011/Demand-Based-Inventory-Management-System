@@ -992,7 +992,7 @@
 
     async function loadBatchInventory() {
       try {
-        const response = await fetch("http://localhost:8000/batch-inventory");
+        const response = await fetch("/batch-inventory");
         const data = await response.json();
 
         const tbody = document.getElementById("batchInventoryBody");
