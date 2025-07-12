@@ -389,3 +389,13 @@ def get_batch_inventory():
 
     except Exception as e:
         return {"error": str(e)}
+
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+@app.get("/")
+def serve_home():
+    return FileResponse("frontend/index.html")
