@@ -20,10 +20,10 @@ app.add_middleware(
 
 # DB connection config
 db_config = {
-    "host": "localhost",
+    "host": "mysql.railway.internal",
     "user": "root",
-    "password": "root",
-    "database": "inventory",
+    "password": "ZNlsztTLSymVendThmgZISuWaijEnyIA",
+    "database": "railway",
     "port": 3306
 }
 
