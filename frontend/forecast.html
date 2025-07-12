@@ -517,9 +517,9 @@
       const stats = document.createElement('div');
       stats.className = 'stats';
       stats.innerHTML = `
-        <p><span>Stock:</span> <span>${product.current_stock} ${product.unit}</span></p>
-        <p><span>Forecast:</span> <span>${product.total_forecasted} ${product.unit}</span></p>
-        <p><span>Status:</span> <span class="status ${product.stock_level}">${product.stock_level}</span></p>
+        <p><span>Inventory:</span> <span>${product.current_stock} ${product.unit}</span></p>
+        <p><span>Forecasted Demand:</span> <span>${product.total_forecasted} ${product.unit}</span></p>
+        <p><span>Inventory Status:</span> <span class="status ${product.stock_level}">${product.stock_level}</span></p>
       `;
 
       card.appendChild(header);
@@ -529,7 +529,7 @@
       if (product.reorder_needed) {
         const reorder = document.createElement('div');
         reorder.className = 'reorder';
-        reorder.innerHTML = `<span>🔄 Reorder ${product.reorder_quantity} ${product.unit} by ${product.reorder_date}</span>`;
+        reorder.innerHTML = `<span>Ensure Availability of ${product.reorder_quantity} ${product.unit} by ${product.reorder_date} as per demand forecast</span>`;
         card.appendChild(reorder);
       }
 
@@ -572,7 +572,7 @@
               borderDash: [4, 4],
             },
             {
-              label: "Current Stock",
+              label: "Current Inventory",
               data: Array(product.past_sales.length + product.forecast.length).fill(product.current_stock),
               borderColor: '#dc2626',
               borderWidth: 1,
@@ -598,7 +598,14 @@
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return `${context.datasetIndex === 0 ? 'Demand' : 'Current Stock'}: ${context.raw}`;
+                  if (context.datasetIndex === 0) {
+                    return `Past Demand: ${context.raw}`;
+                  } else if (context.datasetIndex === 1) {
+                    return `Forecasted Demand: ${context.raw}`;
+                  } else if (context.datasetIndex === 2) {
+                    return `Current Inventory: ${context.raw}`;
+                  }
+                  return context.raw;
                 }
               }
             }

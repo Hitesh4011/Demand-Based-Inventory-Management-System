@@ -559,7 +559,7 @@
           
           <div class="stats-container">
             <div class="stat-card">
-              <p class="stat-label">Total Stock Quantity</p>
+              <p class="stat-label">Total Inventory</p>
               <p class="total-quantity stat-value"></p>
             </div>
             <div class="stat-card">
@@ -567,7 +567,7 @@
               <p class="stat-value">10</p>
             </div>
             <div class="stat-card">
-              <p class="stat-label">Low Stock Items</p>
+              <p class="stat-label">Low Inventory Products</p>
               <p class="low-stock stat-value"></p>
             </div>
             <div class="stat-card">
@@ -600,7 +600,7 @@
           </div>
           
           <div class="section-header">
-            <h2 class="section-title">Reorder Suggestions</h2>
+            <h2 class="section-title">Inventory Replenishment Alert</h2>
             <p class="view-more" onclick="openReorderModal()">View more</p>
           </div>
           <div class="table-container">
@@ -608,9 +608,9 @@
               <thead>
                 <tr>
                   <th class="column-product">Product Name</th>
-                  <th class="column-stock">Current Stock</th>
-                  <th class="column-quantity">Reorder Quantity</th>
-                  <th class="column-reorder-date">Recommended Reorder Date</th>
+                  <th class="column-stock">Current Inventory</th>
+                  <th class="column-quantity">Projected Requirement</th>
+                  <th class="column-reorder-date">Suggested Replenishment Date</th>
                 </tr>
               </thead>
               <tbody id="reorderBody"></tbody>
@@ -620,7 +620,7 @@
           
 
           
-          <h2 class="section-title">Current Stock Status</h2>
+          <h2 class="section-title">Product Inventory Levels</h2>
           <div class="scrollable-container">
             <div class="chart-container" id="chart"></div>
           </div>
