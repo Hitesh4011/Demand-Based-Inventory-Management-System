@@ -352,3 +352,40 @@ def get_expiring_alerts():
 
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.get("/batch-inventory")
+def get_batch_inventory():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT i.batch_id, i.quantity, i.production_date, i.expiry_date,
+                   p.product_names AS product_name
+            FROM inventory i
+            JOIN products p ON i.product_id = p.product_id
+            ORDER BY i.expiry_date ASC
+        """)
+        
+        rows = cursor.fetchall()
+        result = []
+        today = date.today()
+
+        for row in rows:
+            days_to_expire = (row["expiry_date"] - today).days
+            result.append({
+                "product_name": row["product_name"],
+                "batch_id": row["batch_id"],
+                "quantity": row["quantity"],
+                "production_date": row["production_date"].strftime("%Y-%m-%d"),
+                "expiration_date": row["expiry_date"].strftime("%Y-%m-%d"),
+                "days_to_expire": days_to_expire
+            })
+
+        cursor.close()
+        conn.close()
+        return result
+
+    except Exception as e:
+        return {"error": str(e)}
